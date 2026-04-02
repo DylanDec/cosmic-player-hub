@@ -4,18 +4,16 @@ export const radioConfig = {
   stationDescription:
     "NeonWave Radio is een online radiostation gewijd aan de beste muziek, 24/7 live voor jou.",
 
-  // AzuraCast API
-  azuracastBaseUrl: "https://demo.azuracast.com",
-  azuracastStationId: "1",
+  // AzuraCast API endpoints
+  azuracastApiUrl: "http://192.168.50.25/api/nowplaying/test",
+  azuracastScheduleUrl: "http://192.168.50.25/api/station/test/schedule",
 
   // Direct stream URL (Icecast/Shoutcast)
-  streamUrl: "https://demo.azuracast.com/radio/8000/radio.mp3",
+  streamUrl: "http://192.168.50.25/listen/test/radio.mp3",
 
   // Alternative streams (different qualities)
   streams: [
-    { label: "MP3 320kbps", url: "https://demo.azuracast.com/radio/8000/radio.mp3", format: "mp3" },
-    { label: "MP3 128kbps", url: "https://demo.azuracast.com/radio/8010/radio.mp3", format: "mp3" },
-    { label: "AAC 64kbps", url: "https://demo.azuracast.com/radio/8020/radio.aac", format: "aac" },
+    { label: "MP3 128kbps", url: "http://192.168.50.25/listen/test/radio.mp3", format: "mp3" },
   ],
 
   // Polling intervals (ms)
@@ -31,18 +29,10 @@ export const radioConfig = {
 };
 
 // API helpers
-export function apiUrl(path: string) {
-  return `${radioConfig.azuracastBaseUrl}/api${path}`;
-}
-
 export function nowPlayingUrl() {
-  return apiUrl(`/nowplaying/${radioConfig.azuracastStationId}`);
-}
-
-export function stationHistoryUrl() {
-  return apiUrl(`/station/${radioConfig.azuracastStationId}/history`);
+  return radioConfig.azuracastApiUrl;
 }
 
 export function stationScheduleUrl() {
-  return apiUrl(`/station/${radioConfig.azuracastStationId}/schedule`);
+  return radioConfig.azuracastScheduleUrl;
 }
