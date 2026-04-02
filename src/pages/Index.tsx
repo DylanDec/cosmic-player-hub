@@ -99,6 +99,25 @@ export default function HomePage() {
 
         {isLoading ? (
           <NowPlayingSkeleton />
+        ) : isError ? (
+          <>
+            <ErrorFallback />
+            {/* Still show play button on error */}
+            <motion.button
+              onClick={togglePlay}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center glow-cyan"
+            >
+              {isBuffering ? (
+                <Loader2 className="w-10 h-10 text-primary-foreground animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-10 h-10 text-primary-foreground" />
+              ) : (
+                <Play className="w-10 h-10 text-primary-foreground ml-1" />
+              )}
+            </motion.button>
+          </>
         ) : (
           <>
             {/* Artwork */}
