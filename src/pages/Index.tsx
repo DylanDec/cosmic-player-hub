@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Loader2, Users, Mic2 } from "lucide-react";
 import { useAudio } from "@/context/AudioContext";
 import { useNowPlaying } from "@/hooks/useNowPlaying";
+import ErrorFallback from "@/components/ErrorFallback";
 import { useSchedule, ScheduleItem } from "@/hooks/useSchedule";
 import { NowPlayingSkeleton } from "@/components/Skeletons";
 import { radioConfig } from "@/config/radio";
