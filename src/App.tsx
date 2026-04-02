@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioProvider } from "@/context/AudioContext";
-import StarField from "@/components/StarField";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import Navbar from "@/components/Navbar";
 import MiniPlayer from "@/components/MiniPlayer";
 import Index from "./pages/Index";
@@ -21,7 +21,7 @@ const App = () => (
       <Sonner />
       <AudioProvider>
         <BrowserRouter>
-          <StarField />
+          <AnimatedBackground />
           <Navbar />
           <Routes>
             <Route path="/" element={<Index />} />

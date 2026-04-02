@@ -93,6 +93,20 @@
     border: 1px solid hsl(var(--neon-cyan) / 0.3);
     box-shadow: inset 0 0 20px hsl(var(--neon-cyan) / 0.05), 0 0 15px hsl(var(--neon-cyan) / 0.1);
   }
+
+  .glow-line {
+    @apply h-[2px] w-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--primary)),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: glow-slide 3s linear infinite;
+  }
 }
 
 @layer utilities {
