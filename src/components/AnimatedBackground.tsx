@@ -1,35 +1,14 @@
 import { useEffect, useRef } from 'react';
 
-function getThemeByHour(): 'morning' | 'afternoon' | 'evening' | 'night' {
-  const h = new Date().getHours();
-  if (h >= 6 && h < 12) return 'morning';
-  if (h >= 12 && h < 18) return 'afternoon';
-  if (h >= 18 && h < 23) return 'evening';
-  return 'night';
+interface Star {
+  x: number;
+  y: number;
+  radius: number;
+  opacity: number;
+  speed: number;
+  drift: number;
+  angle: number;
 }
-
-const PALETTES: Record<string, { bg: string; colors: string[]; glowColors: string[] }> = {
-  morning: {
-    bg: '#1a0e2e',
-    colors: ['hsla(30, 90%, 55%, 0.25)', 'hsla(350, 70%, 60%, 0.2)', 'hsla(45, 95%, 60%, 0.18)'],
-    glowColors: ['hsla(30, 95%, 50%, 0.35)', 'hsla(350, 80%, 55%, 0.25)'],
-  },
-  afternoon: {
-    bg: '#0a1628',
-    colors: ['hsla(200, 60%, 50%, 0.2)', 'hsla(170, 70%, 45%, 0.18)', 'hsla(45, 80%, 55%, 0.12)'],
-    glowColors: ['hsla(200, 70%, 50%, 0.3)', 'hsla(170, 80%, 45%, 0.2)'],
-  },
-  evening: {
-    bg: '#1a0a0a',
-    colors: ['hsla(15, 85%, 50%, 0.25)', 'hsla(340, 70%, 45%, 0.2)', 'hsla(30, 90%, 45%, 0.15)'],
-    glowColors: ['hsla(15, 90%, 50%, 0.35)', 'hsla(340, 80%, 50%, 0.25)'],
-  },
-  night: {
-    bg: '#070d1a',
-    colors: ['hsla(170, 80%, 50%, 0.2)', 'hsla(280, 70%, 50%, 0.15)', 'hsla(330, 80%, 55%, 0.12)'],
-    glowColors: ['hsla(170, 90%, 50%, 0.3)', 'hsla(330, 85%, 55%, 0.2)'],
-  },
-};
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,121 +19,83 @@ export default function AnimatedBackground() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let animId: number;
+    const stars: Star[] = [];
+
+    // Slow-moving nebula blobs
+    const nebulae = Array.from({ length: 4 }, () => ({
+      xFrac: 0.1 + Math.random() * 0.8,
+      yFrac: 0.1 + Math.random() * 0.8,
+      vx: (Math.random() - 0.5) * 0.08,
+      vy: (Math.random() - 0.5) * 0.06,
+      radiusFrac: (300 + Math.random() * 200) / 1920,
+      hue: Math.random() > 0.5 ? 185 : 320,
+      alpha: 0.04 + Math.random() * 0.04,
+    }));
+
     function resize() {
       canvas!.width = window.innerWidth;
       canvas!.height = window.innerHeight;
     }
-    resize();
-    window.addEventListener('resize', resize);
 
-    const themeId = getThemeByHour();
-    const palette = PALETTES[themeId];
-
-    const particles = Array.from({ length: 80 }, (_, i) => ({
-      xFrac: Math.random(),
-      yFrac: Math.random(),
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.35,
-      radiusFrac: (60 + Math.random() * 250) / 1920,
-      colorIndex: i % palette.colors.length,
-      alpha: 0.1 + Math.random() * 0.4,
-      alphaDir: (Math.random() - 0.5) * 0.004,
-    }));
-
-    const glows = Array.from({ length: 4 }, (_, i) => ({
-      xFrac: 0.15 + Math.random() * 0.7,
-      yFrac: 0.18 + Math.random() * 0.64,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.12,
-      radiusFrac: (350 + Math.random() * 250) / 1920,
-      colorIndex: i % palette.glowColors.length,
-    }));
-
-    const stars = Array.from({ length: 120 }, () => ({
-      xFrac: Math.random(),
-      yFrac: Math.random() * 0.55,
-      size: 0.5 + Math.random() * 1.5,
-      twinkleSpeed: 0.5 + Math.random() * 2,
-      phase: Math.random() * Math.PI * 2,
-    }));
-
-    const waves = [
-      { amplitude: 45, frequency: 0.003, speed: 0.008, yFrac: 0.63, color: palette.colors[0] },
-      { amplitude: 35, frequency: 0.0045, speed: -0.006, yFrac: 0.69, color: palette.colors[1] },
-      { amplitude: 55, frequency: 0.002, speed: 0.005, yFrac: 0.76, color: palette.colors[2] || palette.colors[0] },
-      { amplitude: 25, frequency: 0.006, speed: 0.01, yFrac: 0.83, color: palette.colors[0] },
-    ];
+    function initStars() {
+      stars.length = 0;
+      for (let i = 0; i < 160; i++) {
+        stars.push({
+          x: Math.random() * canvas!.width,
+          y: Math.random() * canvas!.height,
+          radius: Math.random() * 1.5 + 0.3,
+          opacity: Math.random() * 0.4 + 0.05,
+          speed: Math.random() * 0.4 + 0.05,
+          drift: Math.random() * 0.25 + 0.03,
+          angle: Math.random() * Math.PI * 2,
+        });
+      }
+    }
 
     let time = 0;
-    let animId: number;
 
     function draw() {
       const cw = canvas!.width;
       const ch = canvas!.height;
 
-      ctx!.fillStyle = palette.bg;
+      // Dark background
+      ctx!.fillStyle = '#070a14';
       ctx!.fillRect(0, 0, cw, ch);
 
-      for (const g of glows) {
-        const gx = g.xFrac * cw;
-        const gy = g.yFrac * ch;
-        const gr = g.radiusFrac * cw;
-        g.xFrac += g.vx / cw;
-        g.yFrac += g.vy / ch;
-        if (g.xFrac < 0.05 || g.xFrac > 0.95) g.vx *= -1;
-        if (g.yFrac < 0.05 || g.yFrac > 0.95) g.vy *= -1;
-        const grad = ctx!.createRadialGradient(gx, gy, 0, gx, gy, gr);
-        grad.addColorStop(0, palette.glowColors[g.colorIndex]);
+      // Moving nebula glows
+      for (const n of nebulae) {
+        const nx = n.xFrac * cw;
+        const ny = n.yFrac * ch;
+        const nr = n.radiusFrac * cw;
+        n.xFrac += n.vx / cw;
+        n.yFrac += n.vy / ch;
+        if (n.xFrac < 0.05 || n.xFrac > 0.95) n.vx *= -1;
+        if (n.yFrac < 0.05 || n.yFrac > 0.95) n.vy *= -1;
+
+        const grad = ctx!.createRadialGradient(nx, ny, 0, nx, ny, nr);
+        grad.addColorStop(0, `hsla(${n.hue}, 80%, 50%, ${n.alpha})`);
         grad.addColorStop(1, 'transparent');
         ctx!.fillStyle = grad;
-        ctx!.fillRect(gx - gr, gy - gr, gr * 2, gr * 2);
+        ctx!.fillRect(nx - nr, ny - nr, nr * 2, nr * 2);
       }
 
-      for (const p of particles) {
-        const px = p.xFrac * cw;
-        const py = p.yFrac * ch;
-        const pr = p.radiusFrac * cw;
-        p.xFrac += p.vx / cw;
-        p.yFrac += p.vy / ch;
-        p.alpha += p.alphaDir;
-        if (p.alpha <= 0.05 || p.alpha >= 0.55) p.alphaDir *= -1;
-        if (p.xFrac < -0.1) p.xFrac = 1.1;
-        if (p.xFrac > 1.1) p.xFrac = -0.1;
-        if (p.yFrac < -0.1) p.yFrac = 1.1;
-        if (p.yFrac > 1.1) p.yFrac = -0.1;
-        const gradient = ctx!.createRadialGradient(px, py, 0, px, py, pr);
-        gradient.addColorStop(0, palette.colors[p.colorIndex].replace(/[\d.]+\)$/, `${p.alpha})`));
-        gradient.addColorStop(1, 'transparent');
-        ctx!.fillStyle = gradient;
-        ctx!.fillRect(px - pr, py - pr, pr * 2, pr * 2);
-      }
+      // Stars with drift + twinkle
+      for (const star of stars) {
+        star.opacity += star.speed * 0.012 * (Math.random() > 0.5 ? 1 : -1);
+        star.opacity = Math.max(0.03, Math.min(0.55, star.opacity));
+        star.angle += 0.002;
+        star.x += Math.cos(star.angle) * star.drift * 0.3;
+        star.y += Math.sin(star.angle) * star.drift * 0.2 - 0.03;
 
-      for (const s of stars) {
-        const brightness = 0.3 + 0.7 * Math.abs(Math.sin(time * s.twinkleSpeed + s.phase));
+        if (star.x < 0) star.x = cw;
+        if (star.x > cw) star.x = 0;
+        if (star.y < 0) star.y = ch;
+        if (star.y > ch) star.y = 0;
+
         ctx!.beginPath();
-        ctx!.arc(s.xFrac * cw, s.yFrac * ch, s.size, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(255, 255, 255, ${brightness * 0.6})`;
-        ctx!.fill();
-      }
-
-      for (const wave of waves) {
-        const baseY = wave.yFrac * ch;
-        const amp = wave.amplitude * (ch / 1080);
-        ctx!.beginPath();
-        ctx!.moveTo(0, ch);
-        for (let x = 0; x <= cw; x += 4) {
-          const y =
-            baseY +
-            Math.sin(x * wave.frequency + time * wave.speed * 60) * amp +
-            Math.sin(x * wave.frequency * 1.5 + time * wave.speed * 40) * (amp * 0.4);
-          ctx!.lineTo(x, y);
-        }
-        ctx!.lineTo(cw, ch);
-        ctx!.closePath();
-        const grad = ctx!.createLinearGradient(0, baseY - amp, 0, ch);
-        grad.addColorStop(0, wave.color);
-        grad.addColorStop(1, 'transparent');
-        ctx!.fillStyle = grad;
+        ctx!.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx!.fillStyle = `hsla(185, 80%, 70%, ${star.opacity})`;
         ctx!.fill();
       }
 
@@ -162,10 +103,16 @@ export default function AnimatedBackground() {
       animId = requestAnimationFrame(draw);
     }
 
+    resize();
+    initStars();
     draw();
+
+    const onResize = () => { resize(); initStars(); };
+    window.addEventListener('resize', onResize);
+
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', onResize);
     };
   }, []);
 
