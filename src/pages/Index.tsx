@@ -53,7 +53,7 @@ export default function HomePage() {
   const hasData = !!song;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-24">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-24 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
