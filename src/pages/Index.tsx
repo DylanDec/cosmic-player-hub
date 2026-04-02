@@ -40,7 +40,7 @@ function useLocalElapsed(apiElapsed?: number, apiDuration?: number) {
 
 export default function HomePage() {
   const { isPlaying, isBuffering, togglePlay } = useAudio();
-  const { data, isLoading } = useNowPlaying();
+  const { data, isLoading, isError } = useNowPlaying();
   const { data: schedule } = useSchedule();
 
   const np = data?.now_playing;
