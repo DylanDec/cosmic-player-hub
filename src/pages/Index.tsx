@@ -1,10 +1,12 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Loader2, Users, Radio } from "lucide-react";
+import { Play, Pause, Loader2, Users } from "lucide-react";
 import { useAudio } from "@/context/AudioContext";
 import { useNowPlaying } from "@/hooks/useNowPlaying";
 import { NowPlayingSkeleton } from "@/components/Skeletons";
 import ErrorFallback from "@/components/ErrorFallback";
 import { radioConfig } from "@/config/radio";
+import Clock from "@/components/Clock";
 
 export default function HomePage() {
   const { isPlaying, isBuffering, togglePlay } = useAudio();
@@ -12,7 +14,23 @@ export default function HomePage() {
 
   const np = data?.now_playing;
   const song = np?.song;
-  const progress = np && np.duration > 0 ? (np.elapsed / np.duration) * 100 : 0;
+
+  // Live-updating elapsed time between API polls
+  const [localElapsed, setLocalElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!np) return;
+    setLocalElapsed(np.elapsed);
+    const interval = setInterval(() => {
+      setLocalElapsed((prev) => {
+        const next = prev + 1;
+        return np.duration > 0 ? Math.min(next, np.duration) : next;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [np?.elapsed, np?.duration]);
+
+  const progress = np && np.duration > 0 ? (localElapsed / np.duration) * 100 : 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-24">
@@ -22,6 +40,9 @@ export default function HomePage() {
         transition={{ duration: 0.6 }}
         className="flex flex-col items-center gap-8 w-full max-w-md"
       >
+        {/* Clock */}
+        <Clock />
+
         {/* Live indicator */}
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">
@@ -49,7 +70,11 @@ export default function HomePage() {
                 transition={{ duration: 0.4 }}
                 className="relative"
               >
-                <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl blur-2xl" />
+                <motion.div
+                  className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl blur-2xl"
+                  animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.05, 1] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
                 <img
                   src={song?.art || "/placeholder.svg"}
                   alt={song?.title || "Album art"}
@@ -71,20 +96,22 @@ export default function HomePage() {
               <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
-                  style={{ width: `${progress}%` }}
-                  transition={{ duration: 1, ease: "linear" }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.8, ease: "linear" }}
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formatTime(np?.elapsed || 0)}</span>
+                <span>{formatTime(localElapsed)}</span>
                 <span>{formatTime(np?.duration || 0)}</span>
               </div>
             </div>
 
             {/* Play button */}
-            <button
+            <motion.button
               onClick={togglePlay}
-              className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center glow-cyan transition-all hover:scale-110 active:scale-95"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center glow-cyan"
             >
               {isBuffering ? (
                 <Loader2 className="w-10 h-10 text-primary-foreground animate-spin" />
@@ -93,7 +120,7 @@ export default function HomePage() {
               ) : (
                 <Play className="w-10 h-10 text-primary-foreground ml-1" />
               )}
-            </button>
+            </motion.button>
 
             {/* Listeners */}
             {data?.listeners && (
