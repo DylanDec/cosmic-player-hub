@@ -4,7 +4,7 @@ import { radioConfig } from "@/config/radio";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen pt-24 pb-24 px-4">
+    <div className="min-h-screen pt-24 pb-24 px-4 relative z-10">
       <div className="container max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
           <div>

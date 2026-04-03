@@ -8,7 +8,7 @@ export default function RecentPage() {
   const history = data?.song_history || [];
 
   return (
-    <div className="min-h-screen pt-24 pb-24 px-4">
+    <div className="min-h-screen pt-24 pb-24 px-4 relative z-10">
       <div className="container max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-3xl font-bold gradient-text mb-2">Recent Gespeeld</h1>

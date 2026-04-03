@@ -10,7 +10,7 @@ export default function ListenPage() {
   const song = data?.now_playing?.song;
 
   return (
-    <div className="min-h-screen pt-24 pb-24 px-4 flex items-center justify-center">
+    <div className="min-h-screen pt-24 pb-24 px-4 flex items-center justify-center relative z-10">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
