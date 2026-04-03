@@ -1,5 +1,5 @@
 export const radioConfig = {
-  stationName: "NeonWave Radio",
+  stationName: "EngelFM",
   stationTagline: "Streaming the Future",
   stationDescription:
     "NeonWave Radio is een online radiostation gewijd aan de beste muziek, 24/7 live voor jou.",
